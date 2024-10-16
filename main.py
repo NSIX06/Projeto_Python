@@ -24,7 +24,22 @@ def gerar_excel(df):
     return output.getvalue()
 
 def gerar_pdf(df):
-    output(attrs=None, header='Set-Cookie:')
+    output = BytesIO()
+    from reportlab.lib.pagesizes import letter
+    from reportlab.pdfgen import canvas
+    pdf = canvas.Canvas(output, pagesize=letter)
+    pdf.setTitle("Dados do filtro selecionadas")
+    pdf.drawString(100, 750, "Dados filtrados")
+    data = df.reset_index().values.tolist()
+    y_offset = 700
+    for row in data:
+        pdf.drawString(100, y_offset, str(row))
+        y_offset -= 20
+        if y_offset <100:
+           pdf.showPage()
+           y_offset = 750
+    pdf.save()
+    return output.getvalue()
 
 
 
@@ -65,4 +80,17 @@ st.sidebar.download_button(
     label  ="Baixar dados em Excel",
     data=excel_bytes,
     file_name="filtro_acoes_felipe.xlsx",
-    mime="application/vnd.openxmlformats-officedo
+    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+)
+
+pdf_bytes = gerar_pdf(dados)
+st.sidebar.download_button(
+    label  ="Baixar dados em PDF",
+    data=pdf_bytes,
+    file_name="dados_em_pdf.pdf",
+    mime="application/pdf"
+)
+
+st.write("""
+	## Felipe Bugalho
+""")
